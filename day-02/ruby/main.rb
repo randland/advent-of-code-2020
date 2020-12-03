@@ -20,15 +20,13 @@ end
 
 def part_1(data)
   data.map(&PassRow.method(:new)).select do |row|
-    count = row.password.count(row.char)
-    (row.crit_a .. row.crit_b).include?(count)
+    (row.crit_a .. row.crit_b).include?(row.password.count(row_char))
   end
 end
 
 def part_2(data)
   data.map(&PassRow.method(:new)).select do |row|
-    (row.password[row.crit_a - 1] == row.char) ^
-      (row.password[row.crit_b - 1] == row.char)
+    (row.password[row.crit_a - 1] == row.char) ^ (row.password[row.crit_b - 1] == row.char)
   end
 end
 
