@@ -4,7 +4,7 @@ INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n")
 
 class PassRow
-  PASS_REGEX = %r{\A(?<crit_a>\d{1,})-(?<crit_b>\d{1,})\s(?<char>[a-z]):\s(?<password>.*)\Z}
+  PASS_REGEX = /\A(?<crit_a>\d+)-(?<crit_b>\d+) (?<char>\w): (?<password>\w+)\Z/
 
   attr_reader :crit_a, :crit_b, :char, :password
 
@@ -27,10 +27,8 @@ end
 
 def part_2(data)
   data.map(&PassRow.method(:new)).select do |row|
-    count = 0
-    count += 1 if row.password[row.crit_a - 1] == row.char
-    count += 1 if row.password[row.crit_b - 1] == row.char
-    count == 1
+    (row.password[row.crit_a - 1] == row.char) ^
+      (row.password[row.crit_b - 1] == row.char)
   end
 end
 
