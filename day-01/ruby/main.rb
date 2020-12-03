@@ -3,6 +3,10 @@
 INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n").map(&:to_i)
 
+def naive_find(array, target, count)
+  array.combination(count).find { |arr| arr.inject(:+) == target }
+end
+
 def iterative_find_2(array, target)
   array[0 .. -2].each_with_index do |a, idx|
     array[idx + 1 .. -1].each do |b|
@@ -40,8 +44,10 @@ def result_display(part_num, note, vals)
   "Part #{part_num} (#{note}): #{vals.inject(:*)} (#{vals.join(", ")})"
 end
 
+puts result_display(1, "naive", naive_find(DATA, 2020, 2))
 puts result_display(1, "iterative", iterative_find_2(DATA, 2020))
 puts result_display(1, "recursive", recursive_find(DATA, 2020, 2))
 puts
+puts result_display(2, "naive", naive_find(DATA, 2020, 3))
 puts result_display(2, "iterative", iterative_find_3(DATA, 2020))
 puts result_display(2, "recursive", recursive_find(DATA, 2020, 3))
