@@ -34,7 +34,7 @@ def recursive_find(array, target, remaining)
     next if num > target
 
     found = recursive_find(array[idx + 1 .. -1], target - num, remaining - 1)
-    return found.unshift(num) unless found.nil?
+    return [num] + found unless found.nil?
   end
 
   nil
