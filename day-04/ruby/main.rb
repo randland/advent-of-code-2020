@@ -4,9 +4,7 @@ INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n\n")
 
 def parse_passports(data)
-  data.map do |row|
-    Hash[row.split(/\s/).map { |tuple| tuple.split(":") }]
-  end
+  data.map { |row| Hash[row.split(/\s/).map { |tuple| tuple.split(":") }] }
 end
 
 def part_1(data, required_fields)
