@@ -1,14 +1,5 @@
 # frozen_string_literal: true
 
-# byr (Birth Year)
-# iyr (Issue Year)
-# eyr (Expiration Year)
-# hgt (Height)
-# hcl (Hair Color)
-# ecl (Eye Color)
-# pid (Passport ID)
-# cid (Country ID)
-
 INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n\n")
 
