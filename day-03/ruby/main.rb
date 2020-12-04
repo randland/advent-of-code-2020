@@ -4,13 +4,24 @@ INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n")
 TREE = "#"
 
-def run(data, *delta_tuples)
-  delta_tuples.map do |x_delta, y_delta|
-    (0 .. (data.count - 1) / y_delta).count do |iter|
-      data[iter * y_delta][iter * x_delta % data.first.length] == TREE
-    end
+def readable(data, slopes)
+  x_count = data.first.length
+  y_count = data.count
+
+  slopes.map do |x_delta, y_delta|
+    (y_count / y_delta).times.count { |iter| data[iter * y_delta][iter * x_delta % x_count] == TREE }
   end.inject(:*)
 end
 
-puts "Part 1: #{run(DATA, [3, 1])}"
-puts "Part 2: #{run(DATA, [1, 1], [3, 1], [5, 1], [7, 1], [1, 2])}"
+def golf(d, xy)
+  xy.map { |x, y| (0..(d.count-1)/y).count { |i| d[i*y][i*x%d.first.length] == TREE } }.inject(:*)
+end
+
+part_1_slopes = [[3, 1]]
+part_2_slopes = [[1, 1], [3, 1], [5, 1], [7, 1], [1, 2]]
+
+puts "Part 1 (readable): #{readable(DATA, part_1_slopes)}"
+puts "Part 1 (golf): #{golf(DATA, part_1_slopes)}"
+puts
+puts "Part 2 (readable): #{readable(DATA, part_2_slopes)}"
+puts "Part 2 (golf): #{golf(DATA, part_2_slopes)}"
