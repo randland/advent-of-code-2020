@@ -30,5 +30,17 @@ def part_2(data)
   end
 end
 
+GOLF_REGEX = /\A(\d+)-(\d+) (\w): (\w+)\Z/
+
+def part_1_golf(d)
+  d.select { |r| r =~ GOLF_REGEX && ($1.to_i..$2.to_i).include?($4.count($3)) }
+end
+
+def part_2_golf(d)
+  d.select { |r| r =~ GOLF_REGEX && [$1.to_i, $2.to_i].map { |i| $4[i-1] }.count($3) == 1 }
+end
+
 puts "Part 1: #{part_1(DATA).count}"
+puts "Part 1 (golf): #{part_1_golf(DATA).count}"
 puts "Part 2: #{part_2(DATA).count}"
+puts "Part 2 (golf): #{part_2_golf(DATA).count}"
