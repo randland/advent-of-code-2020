@@ -14,7 +14,7 @@ def readable(data, slopes)
 end
 
 def golf(d, xy)
-  xy.map { |x, y| (0..(d.count-1)/y).count { |i| d[i*y][i*x%d.first.length] == TREE } }.inject(:*)
+  xy.map { |x, y| (0..(d.count-1)/y).count { |i| d[i*y][i*x%d[0].length] == TREE } }.inject(:*)
 end
 
 part_1_slopes = [[3, 1]]
