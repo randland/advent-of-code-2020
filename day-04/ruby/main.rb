@@ -3,23 +3,21 @@
 INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n\n")
 
-def parse_data_into_passport_hashes(data)
-  data.map { |row| Hash[row.gsub("\n", " ").split(" ").map { |tuple| tuple.split(":") }] }
-end
-
-def part_1(data, *required_fields)
-  parse_data_into_passport_hashes(data).count do |passport|
-    ([required_fields].flatten - passport.keys).empty?
+def parse_passports(data)
+  data.map do |row|
+    Hash[row.split(/\s/).map { |tuple| tuple.split(":") }]
   end
 end
 
-def part_2(data, **field_requirements)
-  parse_data_into_passport_hashes(data).count do |passport|
-    if (field_requirements.keys.map(&:to_s) - passport.keys).any?
-      false
-    else
-      field_requirements.all? { |field, req| req.call(passport[field.to_s]) }
-    end
+def part_1(data, required_fields)
+  parse_passports(data).count { |passport| (required_fields - passport.keys).empty? }
+end
+
+def part_2(data, field_requirements)
+  parse_passports(data).count do |passport|
+    next if (field_requirements.keys - passport.keys).any?
+
+    field_requirements.all? { |field, req| req.call(passport[field]) }
   end
 end
 
@@ -30,9 +28,10 @@ part_2_constraints = {
   byr: ->(byr) { byr.length == 4 && (1920..2002).include?(byr.to_i) },
   iyr: ->(iyr) { iyr.length == 4 && (2010..2020).include?(iyr.to_i) },
   eyr: ->(eyr) { eyr.length == 4 && (2020..2030).include?(eyr.to_i) },
-  hgt: ->(hgt) { hgt.match(/\A\d{2,3}(cm|in)\Z/) && ($1 == "cm" ? (150..193) : (59..76)).include?(hgt.to_i) },
-  hcl: ->(hcl) { hcl.match(/\A#[0-9a-f]{6}\Z/) },
-  ecl: ->(ecl) { ecl.match(/\A(amb|blu|brn|gry|grn|hzl|oth)\Z/) },
-  pid: ->(pid) { pid.match(/\A[0-9]{9}\Z/) }
-}
+  hgt: ->(hgt) { hgt =~ /\A\d{2,3}(cm|in)\Z/ &&
+                 ($1 == "cm" ? (150..193) : (59..76)).include?(hgt.to_i) },
+  hcl: ->(hcl) { hcl =~ /\A#[\da-f]{6}\Z/ },
+  ecl: ->(ecl) { ecl =~ /\A(amb|blu|brn|gry|grn|hzl|oth)\Z/ },
+  pid: ->(pid) { pid =~ /\A\d{9}\Z/ }
+}.transform_keys(&:to_s)
 puts "Part 2: #{part_2(DATA, part_2_constraints)}"
