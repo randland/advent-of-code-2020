@@ -8,44 +8,48 @@ RULE_DELIM = " bags contain "
 CONTENTS_DELIM = ", "
 CONTENT_REGEX = /\A(?<count>\d+) (?<color>.*) bags?[,\.]?\Z/
 
-def generate_graph(data)
-  data.each_with_object({}) do |rule_str, graph|
-    container, contents_str = rule_str.split(RULE_DELIM)
-    graph[container] = extract_contents(contents_str)
-  end
+def parse_rule_str(rule_str)
+  container, contents_str = rule_str.split(RULE_DELIM)
+  { container => parse_contents_str(contents_str) }
 end
 
-def extract_contents(contents_str)
+def parse_contents_str(contents_str)
   return {} if contents_str == EMPTY_BAG_STR
 
-  contents_str.split(CONTENTS_DELIM).each_with_object({}) do |content_str, contents|
-    content_str.match(CONTENT_REGEX).tap do |matches|
-      contents[matches[:color]] = matches[:count].to_i
-    end
-  end
+  contents_str.split(CONTENTS_DELIM).map(&method(:parse_content_str)).inject(:merge)
 end
 
-def find_all_containers(graph, contents)
-  found_containers = graph.select { |color, containers| (containers.keys & contents).any? }.keys
-  all_containers = (contents + found_containers).uniq
-  return contents if contents == all_containers
-
-  find_all_containers(graph, all_containers)
+def parse_content_str(content_str)
+  matches = content_str.match(CONTENT_REGEX)
+  { matches[:color] => matches[:count].to_i }
 end
 
-def count_contents(graph, target)
-  return 0 if graph[target].nil? || graph[target].empty?
+@graph = DATA.map(&method(:parse_rule_str)).inject(:merge).freeze
 
-  graph[target].map { |color, count| count + count * count_contents(graph, color) }.inject(:+)
+def find_containers_of(contents)
+  @graph.select { |container, contained| (contained.keys & contents).any? }.keys
 end
 
-def part_1(data, target)
-  find_all_containers(generate_graph(data), [target]).count - 1
+def recursive_find_containers(contents)
+  found_containers = (contents + find_containers_of(contents)).uniq
+  return found_containers if found_containers == contents
+
+  recursive_find_containers(found_containers)
 end
 
-def part_2(data, target)
-  count_contents(generate_graph(data), target)
+def part_1(target)
+  recursive_find_containers([target]).count - 1
 end
 
-puts "Part 1: #{part_1(DATA, "shiny gold")}"
-puts "Part 2: #{part_2(DATA, "shiny gold")}"
+def count_contents(target)
+  return 0 if @graph[target].nil? || @graph[target].empty?
+
+  @graph[target].map { |color, count| count + count * count_contents(color) }.inject(:+)
+end
+
+def part_2(target)
+  count_contents(target)
+end
+
+puts "Part 1: #{part_1("shiny gold")}"
+puts "Part 2: #{part_2("shiny gold")}"
