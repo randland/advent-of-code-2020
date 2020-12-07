@@ -28,7 +28,7 @@ class BagRules
   RULE_DELIM = " bags contain "
   EMPTY_BAG_STR = "no other bags."
   CONTENTS_DELIM = ", "
-  CONTENT_REGEX = /\A(?<count>\d+) (?<content>.*) bags?[,\.]?\Z/
+  CONTENT_REGEX = /\A(?<count>\d+) (?<content>.*) bags?/
   private_constant :RULE_DELIM, :EMPTY_BAG_STR, :CONTENTS_DELIM, :CONTENT_REGEX
 
   def parse_rule_data(data)
