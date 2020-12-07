@@ -4,12 +4,6 @@ INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n")
 
 class BagRules
-  RULE_DELIM = " bags contain "
-  EMPTY_BAG_STR = "no other bags."
-  CONTENTS_DELIM = ", "
-  CONTENT_REGEX = /\A(?<count>\d+) (?<content>.*) bags?[,\.]?\Z/
-  private_constant :RULE_DELIM, :EMPTY_BAG_STR, :CONTENTS_DELIM, :CONTENT_REGEX
-
   def initialize(data)
     @graph = parse_rule_data(data)
   end
@@ -30,6 +24,12 @@ class BagRules
   end
 
   private
+
+  RULE_DELIM = " bags contain "
+  EMPTY_BAG_STR = "no other bags."
+  CONTENTS_DELIM = ", "
+  CONTENT_REGEX = /\A(?<count>\d+) (?<content>.*) bags?[,\.]?\Z/
+  private_constant :RULE_DELIM, :EMPTY_BAG_STR, :CONTENTS_DELIM, :CONTENT_REGEX
 
   def parse_rule_data(data)
     data.each_with_object({}) do |rule_str, rules_hash|
