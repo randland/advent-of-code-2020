@@ -3,45 +3,44 @@
 INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n")
 
+EMPTY_BAG_STR = "no other bags."
+RULE_DELIM = " bags contain "
+CONTENTS_DELIM = ", "
+CONTENT_REGEX = /\A(?<count>\d+) (?<color>.*) bags?[,\.]?\Z/
 
 def generate_graph(data)
-  data.each_with_object({}) do |rule, graph|
-    color, contents = rule.match(/\A(.*) bags contain (.*)\.\Z/).captures
-    graph[color] = extract_contents(contents)
+  data.each_with_object({}) do |rule_str, graph|
+    container, contents_str = rule_str.split(" bags contain ")
+    graph[container] = extract_contents(contents_str)
   end
 end
 
-def extract_contents(contents)
-  return {} if contents == "no other bags"
+def extract_contents(contents_str)
+  return {} if contents_str == EMPTY_BAG_STR
 
-  contents.split(", ").inject({}) do |results, bag_str|
-    bag_str.match(/\A(\d+) (.*) bags?\Z/)
-    results.merge($2 => $1.to_i)
+  contents_str.split(CONTENTS_DELIM).each_with_object({}) do |content_str, contents|
+    content_str.match(CONTENT_REGEX).tap do |matches|
+      contents[matches[:color]] = matches[:count].to_i
+    end
   end
 end
 
-def extract_containers(graph, targets)
-  (targets + graph.select { |color, containers| (containers.keys & targets).any? }.keys).uniq
-end
+def find_all_containers(graph, contents)
+  found_containers = graph.select { |color, containers| (containers.keys & contents).any? }.keys
+  all_containers = (contents + found_containers).uniq
+  return contents if contents == all_containers
 
-def part_1(data, target)
-  graph = generate_graph(data)
-
-  containers = [target]
-  container_containers = extract_containers(graph, containers)
-
-  while containers != container_containers
-    containers = container_containers
-    container_containers = extract_containers(graph, containers)
-  end
-
-  containers.count - 1
+  find_all_containers(graph, all_containers)
 end
 
 def count_contents(graph, target)
-  return 0 if graph[target].empty?
+  return 0 if graph[target].nil? || graph[target].empty?
 
   graph[target].map { |color, count| count + count * count_contents(graph, color) }.inject(:+)
+end
+
+def part_1(data, target)
+  find_all_containers(generate_graph(data), [target]).count - 1
 end
 
 def part_2(data, target)
