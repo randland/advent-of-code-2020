@@ -8,55 +8,48 @@ class BagRules
     @graph = parse_rule_data(data)
   end
 
-  def find_containers(*contents)
-    found_containers = contents + find_immediate_containers_of(contents)
+  def all_possible_containers_of(*contents)
+    found_containers = contents + immediate_containers_of(contents)
     return found_containers if found_containers == contents
 
-    find_containers(*found_containers)
+    all_possible_containers_of(*found_containers)
   end
 
   def count_contents_of(container)
     return 0 if @graph[container].nil? || @graph[container].empty?
 
     @graph[container].map do |content, count|
-      count + count * count_contents_of(content)
+      count * (1 + count_contents_of(content))
     end.inject(:+)
   end
 
   private
 
-  RULE_DELIM = " bags contain "
-  EMPTY_BAG_STR = "no other bags."
-  CONTENTS_DELIM = ", "
-  CONTENT_REGEX = /\A(?<count>\d+) (?<content>.*) bags?/
-  private_constant :RULE_DELIM, :EMPTY_BAG_STR, :CONTENTS_DELIM, :CONTENT_REGEX
-
   def parse_rule_data(data)
-    data.each_with_object({}) do |rule_str, rules_hash|
-      rule_str.split(RULE_DELIM).tap do |container, contents_str|
-        rules_hash[container] = parse_contents_str(contents_str)
-      end
+    data.inject({}) do |rules_hash, rule_str|
+      container, contents_str = rule_str.split(" bags contain ")
+      rules_hash.merge(container => parse_contents_str(contents_str))
     end.freeze
   end
 
   def parse_contents_str(contents_str)
-    return {} if contents_str == EMPTY_BAG_STR
+    return {} if contents_str == "no other bags."
 
-    contents_str.split(CONTENTS_DELIM).each_with_object({}) do |content_str, contents_hash|
-      matches = content_str.match(CONTENT_REGEX)
-      contents_hash[matches[:content]] = matches[:count].to_i
+    contents_str.split(", ").inject({}) do |contents_hash, content_str|
+      content_str.match(/\A(\d+) (.*) bag/)
+      contents_hash.merge($2 => $1.to_i)
     end.freeze
   end
 
-  def find_immediate_containers_of(contents)
+  def immediate_containers_of(contents)
     @graph.select do |container, contained|
-      !contents.include?(container) && (contained.keys & contents).any?
+      !contents.include?(container) && (contents & contained.keys).any?
     end.keys
   end
 end
 
 def part_1(data, target)
-  BagRules.new(data).find_containers(target).count - 1
+  BagRules.new(data).all_possible_containers_of(target).count - 1
 end
 
 def part_2(data, target)
