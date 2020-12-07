@@ -14,11 +14,11 @@ class BagRules
     @graph = parse_rule_data(data)
   end
 
-  def recursive_find_containers(contents)
+  def find_possible_containers(contents)
     found_containers = contents + find_containers_of(contents)
     return found_containers if found_containers == contents
 
-    recursive_find_containers(found_containers)
+    find_possible_containers(found_containers)
   end
 
   def count_contents(target)
@@ -54,7 +54,7 @@ class BagRules
 end
 
 def part_1(data, target)
-  BagRules.new(data).recursive_find_containers([target]).count - 1
+  BagRules.new(data).find_possible_containers([target]).count - 1
 end
 
 def part_2(data, target)
