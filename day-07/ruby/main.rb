@@ -10,7 +10,7 @@ CONTENT_REGEX = /\A(?<count>\d+) (?<color>.*) bags?[,\.]?\Z/
 
 def generate_graph(data)
   data.each_with_object({}) do |rule_str, graph|
-    container, contents_str = rule_str.split(" bags contain ")
+    container, contents_str = rule_str.split(RULE_DELIM)
     graph[container] = extract_contents(contents_str)
   end
 end
