@@ -7,24 +7,26 @@ class BagRules
   RULE_DELIM = " bags contain "
   EMPTY_BAG_STR = "no other bags."
   CONTENTS_DELIM = ", "
-  CONTENT_REGEX = /\A(?<count>\d+) (?<color>.*) bags?[,\.]?\Z/
+  CONTENT_REGEX = /\A(?<count>\d+) (?<content>.*) bags?[,\.]?\Z/
   private_constant :RULE_DELIM, :EMPTY_BAG_STR, :CONTENTS_DELIM, :CONTENT_REGEX
 
   def initialize(data)
     @graph = parse_rule_data(data)
   end
 
-  def find_possible_containers(contents)
-    found_containers = contents + find_containers_of(contents)
+  def find_containers(*contents)
+    found_containers = contents + find_immediate_containers_of(contents)
     return found_containers if found_containers == contents
 
-    find_possible_containers(found_containers)
+    find_containers(*found_containers)
   end
 
-  def count_contents(target)
-    return 0 if @graph[target].nil? || @graph[target].empty?
+  def count_contents_of(container)
+    return 0 if @graph[container].nil? || @graph[container].empty?
 
-    @graph[target].map { |color, count| count + count * count_contents(color) }.inject(:+)
+    @graph[container].map do |content, count|
+      count + count * count_contents_of(content)
+    end.inject(:+)
   end
 
   private
@@ -42,11 +44,11 @@ class BagRules
 
     contents_str.split(CONTENTS_DELIM).each_with_object({}) do |content_str, contents_hash|
       matches = content_str.match(CONTENT_REGEX)
-      contents_hash[matches[:color]] = matches[:count].to_i
+      contents_hash[matches[:content]] = matches[:count].to_i
     end.freeze
   end
 
-  def find_containers_of(contents)
+  def find_immediate_containers_of(contents)
     @graph.select do |container, contained|
       !contents.include?(container) && (contained.keys & contents).any?
     end.keys
@@ -54,11 +56,11 @@ class BagRules
 end
 
 def part_1(data, target)
-  BagRules.new(data).find_possible_containers([target]).count - 1
+  BagRules.new(data).find_containers(target).count - 1
 end
 
 def part_2(data, target)
-  BagRules.new(data).count_contents(target)
+  BagRules.new(data).count_contents_of(target)
 end
 
 puts "Part 1: #{part_1(DATA, "shiny gold")}"
