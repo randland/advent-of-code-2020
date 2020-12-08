@@ -4,32 +4,25 @@ INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n")
 
 class CodeRunner
+  InfiniteLoopError = Class.new(StandardError)
+
   attr_reader :accumulator
 
   def initialize(program)
     @accumulator = 0
     @program = program
-    @ptr = 0
-    @ran_ptrs = []
+    @pointer = 0
+    @ran_pointers = []
   end
 
   def run
-    until ptr >= program.count
-      return if ran_ptrs.include?(ptr)
-      op, val = program[ptr].split(" ")
-      ran_ptrs << ptr
+    loop do
+      break if pointer >= program.length
+      raise InfiniteLoopError if ran_pointers.include?(pointer)
+      ran_pointers << pointer
 
-      case op
-      when "acc"
-        @accumulator += val.to_i
-        @ptr += 1
-      when "jmp"
-        @ptr += val.to_i
-      when "nop"
-        @ptr += 1
-      else
-        raise "WTF"
-      end
+      op, val = program[pointer].split(" ")
+      send("op_#{op}", val)
     end
 
     accumulator
@@ -37,18 +30,31 @@ class CodeRunner
 
   private
 
-  attr_reader :ptr, :program, :ran_ptrs
+  attr_accessor :program, :pointer, :ran_pointers
+
+  def op_acc(val)
+    @accumulator += val.to_i
+    @pointer += 1
+  end
+
+  def op_jmp(val)
+    @pointer += val.to_i
+  end
+
+  def op_nop(val)
+    @pointer += 1
+  end
 end
 
-def attempt_fix(data, broken_ptr)
+def attempt_fix(data, broken_pointer)
   result = data.clone
-  op, val = result[broken_ptr].split(" ")
+  op, val = result[broken_pointer].split(" ")
 
   case op
   when "jmp"
-    result[broken_ptr] = "nop #{val}"
+    result[broken_pointer] = "nop #{val}"
   when "nop"
-    result[broken_ptr] = "jmp #{val}"
+    result[broken_pointer] = "jmp #{val}"
   else
     return nil
   end
@@ -59,15 +65,20 @@ end
 def part_1(data)
   runner = CodeRunner.new(data)
   runner.run
+rescue CodeRunner::InfiniteLoopError => ex
   runner.accumulator
 end
 
 def part_2(data)
-  data.count.times do |broken_ptr|
-    next if (fix = attempt_fix(data, broken_ptr)).nil?
+  data.length.times do |broken_pointer|
+    fix_attempt = attempt_fix(data, broken_pointer)
+    next if fix_attempt.nil?
 
-    result = CodeRunner.new(fix).run
-    return result unless result.nil?
+    runner = CodeRunner.new(fix_attempt)
+    runner.run
+    return runner.accumulator
+  rescue CodeRunner::InfiniteLoopError => ex
+    next
   end
 end
 
