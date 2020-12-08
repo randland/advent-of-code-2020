@@ -32,7 +32,8 @@ class CodeRunner
 
   attr_accessor :program, :pointer, :ran_pointers
 
-  def op_acc(val) @accumulator += val.to_i
+  def op_acc(val)
+    @accumulator += val.to_i
     @pointer += 1
   end
 
