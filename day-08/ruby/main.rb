@@ -48,7 +48,7 @@ end
 def part_1(data)
   runner = CodeRunner.new(data)
   runner.run
-rescue CodeRunner::InfiniteLoopError => ex
+rescue CodeRunner::InfiniteLoopError
   runner.accumulator
 end
 
@@ -93,7 +93,8 @@ puts "Part 2: #{part_2(DATA)}"
 
 def golf_run(prog)
   acc, ptr, ran = 0, 0, []
-  ops = { acc: ->(val) { acc += val; ptr += 1 }, jmp: ->(val) { ptr += val } }
+  ops = { acc: ->(val) { acc += val; ptr += 1 },
+          jmp: ->(val) { ptr += val } }
   while ptr < prog.size
     ran.include?(ptr) ? raise(acc.to_s) : ran << ptr
     op, val = prog[ptr].split(" ")
@@ -112,10 +113,7 @@ def part_2_golf(data)
   %w[nop jmp].permutation.each do |from, to|
     data.each_index do |ptr|
       next if !data[ptr].include?(from)
-      data.dup.tap do |test|
-        test[ptr] = test[ptr].sub(from, to)
-        return golf_run(test)
-      end
+      data.dup.tap { |test| test[ptr] = test[ptr].sub(from, to); return golf_run(test) }
     rescue
     end
   end
