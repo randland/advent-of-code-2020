@@ -60,8 +60,8 @@ class CodeFixer
   end
 
   def run
-    program.length.times do |test_ptr|
-      next unless test_program = apply_modification(test_ptr)
+    program.length.times do |test_pointer|
+      next unless test_program = apply_modification(test_pointer)
 
       return CodeRunner.new(test_program).run
     rescue CodeRunner::InfiniteLoopError => ex
@@ -73,11 +73,11 @@ class CodeFixer
 
   attr_reader :modification, :program
 
-  def apply_modification(test_ptr)
+  def apply_modification(test_pointer)
     program.dup.tap do |test_program|
-      test_program[test_ptr] = modification.call(test_program[test_ptr])
+      test_program[test_pointer] = modification.call(test_program[test_pointer])
 
-      return nil if test_program[test_ptr] == program[test_ptr]
+      return nil if test_program[test_pointer] == program[test_pointer]
     end
   end
 end
