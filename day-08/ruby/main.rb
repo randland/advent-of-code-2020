@@ -98,18 +98,15 @@ InfLoop = Class.new(StandardError)
 
 def golf_run(prog)
   acc, ptr, ran = 0, 0, []
-
   until ptr >= prog.length
     ran.include?(ptr) ? raise(InfLoop, acc) : ran << ptr
     op, val = prog[ptr].split(" ")
-
     case op
     when "acc" then acc += val.to_i; ptr += 1
     when "jmp" then ptr += val.to_i
-    else            ptr += 1
+    else ptr += 1
     end
   end
-
   acc
 end
 
@@ -117,7 +114,6 @@ def golf_fix(prog, fixes)
   fixes.each do |from, to|
     prog.length.times do |ptr|
       next unless prog[ptr].include?(from)
-
       prog.dup.tap do |test|
         test[ptr] = test[ptr].sub(from, to)
         return golf_run(test)
