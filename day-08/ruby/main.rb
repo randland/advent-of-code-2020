@@ -47,7 +47,7 @@ class CodeRunner
 end
 
 def attempt_fix(data, broken_pointer)
-  result = data.clone
+  result = data.dup
   op, val = result[broken_pointer].split(" ")
 
   case op
@@ -74,9 +74,7 @@ def part_2(data)
     fix_attempt = attempt_fix(data, broken_pointer)
     next if fix_attempt.nil?
 
-    runner = CodeRunner.new(fix_attempt)
-    runner.run
-    return runner.accumulator
+    return CodeRunner.new(fix_attempt).run
   rescue CodeRunner::InfiniteLoopError => ex
     next
   end
