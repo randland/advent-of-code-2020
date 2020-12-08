@@ -9,15 +9,14 @@ class CodeRunner
   attr_reader :accumulator
 
   def initialize(program)
+    @program = program.dup.map(&:freeze).freeze
     @accumulator = 0
-    @program = program
     @pointer = 0
     @ran_pointers = []
   end
 
   def run
-    loop do
-      break if pointer >= program.length
+    while pointer < program.size
       raise InfiniteLoopError if ran_pointers.include?(pointer)
       ran_pointers << pointer
 
@@ -54,17 +53,16 @@ rescue CodeRunner::InfiniteLoopError => ex
 end
 
 class CodeFixer
+  NotModified = Class.new(StandardError)
+
   def initialize(program)
     @program = program.freeze
   end
 
   def run(&modification)
-    program.length.times do |test_pointer|
-      next unless test_program = apply_modification(test_pointer, &modification)
-
-      return CodeRunner.new(test_program).run
-    rescue CodeRunner::InfiniteLoopError => ex
-      next
+    program.each_index do |fix_pointer|
+      return CodeRunner.new(apply_modification(fix_pointer, &modification)).run
+    rescue NotModified, CodeRunner::InfiniteLoopError
     end
   end
 
@@ -72,18 +70,18 @@ class CodeFixer
 
   attr_reader :modification, :program
 
-  def apply_modification(test_pointer, &modification)
+  def apply_modification(fix_pointer, &modification)
     program.dup.tap do |test_program|
-      test_program[test_pointer] = modification.call(test_program[test_pointer])
-
-      return nil if test_program[test_pointer] == program[test_pointer]
+      test_program[fix_pointer] = modification.call(test_program[fix_pointer])
+      raise NotModified if test_program[fix_pointer] == program[fix_pointer]
     end
   end
 end
 
 def part_2(data)
   fixer = CodeFixer.new(data)
-  fixer.run { |inst| inst.sub("jmp", "nop") } || fixer.run { |inst| inst.sub("nop", "jmp") }
+  fixer.run { |inst| inst.sub("jmp", "nop") } ||
+    fixer.run { |inst| inst.sub("nop", "jmp") }
 end
 
 puts "Part 1: #{part_1(DATA)}"
@@ -110,19 +108,17 @@ rescue => ex
   ex
 end
 
-def golf_fix(prog, *fixes)
-  (0...prog.size).to_a.product(fixes).each do |ptr, (from, to)|
-    next if !prog[ptr].include?(from)
-    prog.dup.tap do |test|
-      test[ptr] = test[ptr].sub(from, to)
-      return golf_run(test)
-    end
-  rescue
-  end
-end
-
 def part_2_golf(data)
-  golf_fix(data, %w[nop jmp], %w[jmp nop])
+  %w[nop jmp].permutation.each do |from, to|
+    data.each_index do |ptr|
+      next if !data[ptr].include?(from)
+      data.dup.tap do |test|
+        test[ptr] = test[ptr].sub(from, to)
+        return golf_run(test)
+      end
+    rescue
+    end
+  end
 end
 
 puts "Part 1 (golf): #{part_1_golf(DATA)}"
