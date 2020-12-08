@@ -100,10 +100,9 @@ def golf_run(prog)
   acc, ptr, ran = 0, 0, []
 
   until ptr >= prog.length
-    raise InfLoop, acc if ran.include?(ptr)
-    ran << ptr
-
+    ran.include?(ptr) ? raise(InfLoop, acc) : ran << ptr
     op, val = prog[ptr].split(" ")
+
     case op
     when "acc" then acc += val.to_i; ptr += 1
     when "jmp" then ptr += val.to_i
