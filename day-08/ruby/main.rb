@@ -95,28 +95,23 @@ puts "Part 2: #{part_2(DATA)}"
 
 def golf_run(prog)
   acc, ptr, ran = 0, 0, []
-  until ptr >= prog.size
+  ops = { acc: ->(val) { acc += val; ptr += 1 }, jmp: ->(val) { ptr += val } }
+  while ptr < prog.size
     ran.include?(ptr) ? raise(acc.to_s) : ran << ptr
     op, val = prog[ptr].split(" ")
-    case op
-    when "acc" then acc += val.to_i; ptr += 1
-    when "jmp" then ptr += val.to_i
-    else ptr += 1
-    end
+    ops[op.to_sym]&.call(val.to_i) || ptr += 1
   end
   acc
 end
 
-def golf_fix(prog, fixes)
-  prog.size.times do |ptr|
-    fixes.each do |from, to|
-      next unless prog[ptr].include?(from)
-      prog.dup.tap do |test|
-        test[ptr] = test[ptr].sub(from, to)
-        return golf_run(test)
-      end
-    rescue
+def golf_fix(prog, *fixes)
+  (0...prog.size).to_a.product(fixes).each do |ptr, (from, to)|
+    next if !prog[ptr].include?(from)
+    prog.dup.tap do |test|
+      test[ptr] = test[ptr].sub(from, to)
+      return golf_run(test)
     end
+  rescue
   end
 end
 
@@ -127,7 +122,7 @@ rescue => ex
 end
 
 def part_2_golf(data)
-  golf_fix(data, "nop" => "jmp", "jmp" => "nop")
+  golf_fix(data, %w[nop jmp], %w[jmp nop])
 end
 
 puts "Part 1 (golf): #{part_1_golf(DATA)}"
