@@ -104,6 +104,12 @@ def golf_run(prog)
   acc
 end
 
+def part_1_golf(data)
+  golf_run(data)
+rescue => ex
+  ex
+end
+
 def golf_fix(prog, *fixes)
   (0...prog.size).to_a.product(fixes).each do |ptr, (from, to)|
     next if !prog[ptr].include?(from)
@@ -113,12 +119,6 @@ def golf_fix(prog, *fixes)
     end
   rescue
   end
-end
-
-def part_1_golf(data)
-  golf_run(data)
-rescue => ex
-  ex
 end
 
 def part_2_golf(data)
