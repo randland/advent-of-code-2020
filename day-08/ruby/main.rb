@@ -46,22 +46,6 @@ class CodeRunner
   end
 end
 
-def attempt_fix(data, broken_pointer)
-  result = data.dup
-  op, val = result[broken_pointer].split(" ")
-
-  case op
-  when "jmp"
-    result[broken_pointer] = "nop #{val}"
-  when "nop"
-    result[broken_pointer] = "jmp #{val}"
-  else
-    return nil
-  end
-
-  result
-end
-
 def part_1(data)
   runner = CodeRunner.new(data)
   runner.run
@@ -69,15 +53,38 @@ rescue CodeRunner::InfiniteLoopError => ex
   runner.accumulator
 end
 
-def part_2(data)
-  data.length.times do |broken_pointer|
-    fix_attempt = attempt_fix(data, broken_pointer)
-    next if fix_attempt.nil?
-
-    return CodeRunner.new(fix_attempt).run
-  rescue CodeRunner::InfiniteLoopError => ex
-    next
+class CodeFixer
+  def initialize(program, &modification)
+    @program = program.freeze
+    @modification = modification
   end
+
+  def run
+    program.length.times do |test_ptr|
+      next unless test_program = apply_modification(test_ptr)
+
+      return CodeRunner.new(test_program).run
+    rescue CodeRunner::InfiniteLoopError => ex
+      next
+    end
+  end
+
+  private
+
+  attr_reader :modification, :program
+
+  def apply_modification(test_ptr)
+    program.dup.tap do |test_program|
+      test_program[test_ptr] = modification.call(test_program[test_ptr])
+
+      return nil if test_program[test_ptr] == program[test_ptr]
+    end
+  end
+end
+
+def part_2(data)
+  CodeFixer.new(data) { |inst| inst.sub("jmp", "nop") }.run ||
+    CodeFixer.new(data) { |inst| inst.sub("nop", "jmp") }.run
 end
 
 puts "Part 1: #{part_1(DATA)}"
