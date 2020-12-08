@@ -94,7 +94,7 @@ puts "Part 2: #{part_2(DATA)}"
 
 def golf_run(prog)
   acc, ptr, ran = 0, 0, []
-  until ptr >= prog.length
+  until ptr >= prog.size
     ran.include?(ptr) ? raise(acc.to_s) : ran << ptr
     op, val = prog[ptr].split(" ")
     case op
@@ -107,8 +107,8 @@ def golf_run(prog)
 end
 
 def golf_fix(prog, fixes)
-  fixes.each do |from, to|
-    prog.length.times do |ptr|
+  prog.size.times do |ptr|
+    fixes.each do |from, to|
       next unless prog[ptr].include?(from)
       prog.dup.tap do |test|
         test[ptr] = test[ptr].sub(from, to)
@@ -122,7 +122,7 @@ end
 def part_1_golf(data)
   golf_run(data)
 rescue => ex
-  ex.message
+  ex
 end
 
 def part_2_golf(data)
