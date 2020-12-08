@@ -32,8 +32,7 @@ class CodeRunner
 
   attr_accessor :program, :pointer, :ran_pointers
 
-  def op_acc(val)
-    @accumulator += val.to_i
+  def op_acc(val) @accumulator += val.to_i
     @pointer += 1
   end
 
@@ -54,14 +53,13 @@ rescue CodeRunner::InfiniteLoopError => ex
 end
 
 class CodeFixer
-  def initialize(program, &modification)
+  def initialize(program)
     @program = program.freeze
-    @modification = modification
   end
 
-  def run
+  def run(&modification)
     program.length.times do |test_pointer|
-      next unless test_program = apply_modification(test_pointer)
+      next unless test_program = apply_modification(test_pointer, &modification)
 
       return CodeRunner.new(test_program).run
     rescue CodeRunner::InfiniteLoopError => ex
@@ -73,7 +71,7 @@ class CodeFixer
 
   attr_reader :modification, :program
 
-  def apply_modification(test_pointer)
+  def apply_modification(test_pointer, &modification)
     program.dup.tap do |test_program|
       test_program[test_pointer] = modification.call(test_program[test_pointer])
 
@@ -83,8 +81,8 @@ class CodeFixer
 end
 
 def part_2(data)
-  CodeFixer.new(data) { |inst| inst.sub("jmp", "nop") }.run ||
-    CodeFixer.new(data) { |inst| inst.sub("nop", "jmp") }.run
+  fixer = CodeFixer.new(data)
+  fixer.run { |inst| inst.sub("jmp", "nop") } || fixer.run { |inst| inst.sub("nop", "jmp") }
 end
 
 puts "Part 1: #{part_1(DATA)}"
