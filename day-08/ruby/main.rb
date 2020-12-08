@@ -94,12 +94,10 @@ puts "Part 2: #{part_2(DATA)}"
 # Code Golf #
 #############
 
-InfLoop = Class.new(StandardError)
-
 def golf_run(prog)
   acc, ptr, ran = 0, 0, []
   until ptr >= prog.length
-    ran.include?(ptr) ? raise(InfLoop, acc) : ran << ptr
+    ran.include?(ptr) ? raise(acc.to_s) : ran << ptr
     op, val = prog[ptr].split(" ")
     case op
     when "acc" then acc += val.to_i; ptr += 1
@@ -125,7 +123,7 @@ end
 
 def part_1_golf(data)
   golf_run(data)
-rescue InfLoop => ex
+rescue => ex
   ex.message
 end
 
