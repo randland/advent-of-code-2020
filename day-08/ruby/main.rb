@@ -89,3 +89,54 @@ end
 
 puts "Part 1: #{part_1(DATA)}"
 puts "Part 2: #{part_2(DATA)}"
+
+#############
+# Code Golf #
+#############
+
+InfLoop = Class.new(StandardError)
+
+def golf_run(prog)
+  acc, ptr, ran = 0, 0, []
+
+  until ptr >= prog.length
+    raise InfLoop, acc if ran.include?(ptr)
+    ran << ptr
+
+    op, val = prog[ptr].split(" ")
+    case op
+    when "acc" then acc += val.to_i; ptr += 1
+    when "jmp" then ptr += val.to_i
+    else            ptr += 1
+    end
+  end
+
+  acc
+end
+
+def golf_fix(prog, fixes)
+  fixes.each do |from, to|
+    prog.length.times do |ptr|
+      next unless prog[ptr].include?(from)
+
+      prog.dup.tap do |test|
+        test[ptr] = test[ptr].sub(from, to)
+        return golf_run(test)
+      end
+    rescue
+    end
+  end
+end
+
+def part_1_golf(data)
+  golf_run(data)
+rescue InfLoop => ex
+  ex.message
+end
+
+def part_2_golf(data)
+  golf_fix(data, "nop" => "jmp", "jmp" => "nop")
+end
+
+puts "Part 1 (golf): #{part_1_golf(DATA)}"
+puts "Part 2 (golf): #{part_2_golf(DATA)}"
