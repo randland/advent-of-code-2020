@@ -16,14 +16,11 @@ def part_1(data)
 end
 
 def find_contig_list(list, target)
-  list.each_index do |idx|
-    size = 1
-    begin 
-      size += 1
-      sublist = list[idx, size]
-    end while sublist.inject(:+) < target
-    return sublist if sublist.inject(:+) == target
+  idx_a, idx_b = 0, 0
+  while list[idx_a..idx_b].inject(:+) != target
+    list[idx_a..idx_b].inject(:+) < target ? idx_b += 1 : idx_a += 1
   end
+  list[idx_a..idx_b]
 end
 
 def part_2(data)
