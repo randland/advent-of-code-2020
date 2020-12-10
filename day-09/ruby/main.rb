@@ -21,7 +21,7 @@ def find_contig_list(list, target)
 end
 
 def part_2(data)
-  find_contig_list(data, part_1(data)).tap { |result| return result.min + result.max }
+  find_contig_list(data, part_1(data)).yield_self { |result| result.min + result.max }
 end
 
 puts "Part 1: #{part_1(DATA)}"
