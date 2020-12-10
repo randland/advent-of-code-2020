@@ -9,11 +9,8 @@ def full_list(list)
 end
 
 def part_1(data)
-  counts = Hash.new { 0 }
-  full_list(data).tap do |list|
-    (list.size - 1).times { |idx| counts[list[idx + 1] - list[idx]] += 1 }
-  end
-  counts[1] * counts[3]
+  counts = full_list(data).each_cons(2).map { |a, b| b - a }
+  counts.count(1) * counts.count(3)
 end
 
 def valid_list?(list)
