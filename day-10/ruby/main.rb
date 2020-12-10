@@ -20,17 +20,17 @@ def valid_list?(list)
   (0...list.size - 1).map { |idx| list[idx + 1] - list[idx] }.all? { |n| n <= 3 }
 end
 
-def count_permutations(list)
-  mid = list[1..-2]
-  (2**mid.size).times.map do |change_code|
-    changes = change_code.to_s(2).rjust(5, "0").reverse.chars.map { |c| c == "1" }
-    [list[0]] + mid.select.with_index { |num, idx| changes[idx] } + [list[-1]]
+def valid_perm_count(list)
+  return 1 if list.size < 3
+
+  (2**(list.size - 2)).times.map do |change_code|
+    changes = change_code.to_s(2).reverse.chars.map { |c| c == "1" }
+    [list[0]] + list[1..-1].select.with_index { |num, idx| changes[idx] } + [list[-1]]
   end.select(&method(:valid_list?)).count
 end
 
 def part_2(data)
-  partitioned_list = full_list(data).slice_when { |a, b| b - a == 3 }
-  partitioned_list.map(&method(:count_permutations)).inject(:*)
+  full_list(data).slice_when { |a, b| b - a == 3 }.map(&method(:valid_perm_count)).inject(:*)
 end
 
 puts "Part 1: #{part_1(DATA)}"
