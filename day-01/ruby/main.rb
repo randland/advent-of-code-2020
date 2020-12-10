@@ -68,3 +68,12 @@ end
 
 puts result_display(1, "golf", part_1_golf(DATA, 2020))
 puts result_display(2, "golf", part_2_golf(DATA, 2020))
+
+def rec_golf(a, t, c)
+  return a & a.map { |n| t - n } if c < 3
+  a.map { |n| [n] + rec_golf(a, t - n, c - 1) }.select { |l| l.size > 1 }[0] || []
+end
+
+puts result_display(1, "recursive golf", rec_golf(DATA, 2020, 2))
+puts result_display(2, "recursive golf", rec_golf(DATA, 2020, 3))
+puts result_display(3, "recursive golf", rec_golf(DATA, 2020, 4))
