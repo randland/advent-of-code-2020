@@ -22,10 +22,12 @@ end
 def part_2(data)
   perm_counts = { 0 => 1 }
   list = full_list(data)[1..-1]
+
   list.each do |plug|
     possible_prevs = (1..MAX_GAP).map { |diff| plug - diff }
     perm_counts[plug] = perm_counts.slice(*possible_prevs).values.sum
   end
+
   perm_counts.values.last
 end
 
@@ -41,7 +43,7 @@ def part_1_golf(l)
 end
 
 def part_2_golf(l)
-  (l.sort + [l.max + 3]).inject({0 => 1}) { |o, e| o.merge(e => (1..3).sum { |d| o[e - d] || 0 }) }.values.last
+  (l.sort + [l.max + 3]).inject({ 0 => 1 }) { |o, e| o.merge(e => (e-3...e).sum { |i| o[i] || 0 }) }.values.last
 end
 
 puts "Part 1 (golf): #{part_1_golf(DATA)}"
