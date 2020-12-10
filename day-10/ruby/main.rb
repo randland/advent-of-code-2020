@@ -10,7 +10,8 @@ end
 
 def part_1(data)
   counts = Hash.new { 0 }
-  full_list(data).each_cons(2).each { |a, b| counts[b - a] += 1 }
+  pairs = full_list(data).each_cons(2)
+  pairs.each { |a, b| counts[b - a] += 1 }
   counts[1] * counts[3]
 end
 
@@ -32,9 +33,8 @@ def valid_permutations_count(list)
 end
 
 def part_2(data)
-  full_list(data).slice_when { |a, b| b - a == 3 }.yield_self do |partitions|
-    partitions.map(&method(:valid_permutations_count)).inject(:*)
-  end
+  partitions = full_list(data).slice_when { |a, b| b - a == 3 }
+  partitions.map(&method(:valid_permutations_count)).inject(:*)
 end
 
 puts "Part 1: #{part_1(DATA)}"
@@ -49,21 +49,19 @@ def golf_list(list)
 end
 
 def part_1_golf(data)
-  counts = golf_list(data).each_cons(2).map { |a, b| b - a }
-  counts.count(1) * counts.count(3)
+  golf_list(data).each_cons(2).map { |a, b| b - a }.yield_self { |c| c.count(1) * c.count(3) }
 end
 
-def valid_perms(list)
+def perm_count(list)
   return 1 if list.size < 3
 
-  (2**(list.size - 2)).times.map do |ver|
-    kept = ver.to_s(2).reverse.chars.map { |c| c == "1" }
-    [list[0]] + list[1..-2].select.with_index { |_, idx| kept[idx] } + [list[-1]]
-  end.select { |list| list.each_cons(2).all? { |a, b| b - a <= 3 } }.count
+  (2**(list.size - 2)).times.map do |v|
+    [list[0]] + list[1..-2].select.with_index { |_, i| v.to_s(2)[-i-1] == "1" } + [list[-1]]
+  end.select { |list| list.each_cons(2).all? { |a, b| b - a < 4 } }.count
 end
 
 def part_2_golf(data)
-  golf_list(data).slice_when { |a, b| b - a == 3 }.map(&method(:valid_perms)).inject(:*)
+  golf_list(data).slice_when { |a, b| b - a == 3 }.map(&method(:perm_count)).inject(:*)
 end
 
 puts "Part 1 (golf): #{part_1_golf(DATA)}"
