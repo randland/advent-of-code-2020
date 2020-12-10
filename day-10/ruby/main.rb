@@ -14,7 +14,7 @@ def part_1(data)
 end
 
 def valid_list?(list)
-  (0...list.size - 1).map { |idx| list[idx + 1] - list[idx] }.all? { |n| n <= 3 }
+  list.each_cons(2).all? { |a, b| b - a <= 3 }
 end
 
 def valid_perm_count(list)
