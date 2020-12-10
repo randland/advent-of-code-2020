@@ -12,12 +12,20 @@ def part_1(data)
 end
 
 def part_2(data)
-  data.map(&method(:get_seat_num)).sort.tap do |seat_nums|
-    seat_nums.each_with_index do |num, idx|
-      return seat_nums[idx] + 1 if seat_nums[idx + 1] != seat_nums[idx] + 1
-    end
+  data.map(&method(:get_seat_num)).sort.each_cons(2) do |seat_a, seat_b|
+    return seat_a + 1 if seat_b != seat_a + 1
   end
 end
 
 puts "Part 1: #{part_1(DATA)}"
 puts "Part 2: #{part_2(DATA)}"
+
+#############
+# Code Golf #
+#############
+
+def part_2_golf(data)
+  data.map(&method(:get_seat_num)).sort.each_cons(2) { |a, b| return a + 1 if b - a > 1 }
+end
+
+puts "Part 2 (golf): #{part_2_golf(DATA)}"

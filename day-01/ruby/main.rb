@@ -40,6 +40,13 @@ def recursive_find(array, target, remaining)
   nil
 end
 
+def rec_find(a, t, r)
+  return (a.include?(t) ? [t] : nil) if r == 1
+  a.each_with_index do |n, i|
+    n <= t && rec_find(a[i+1..-1], t-n, r-1).yield_self { |f| !f.nil? and return([n]+f) }
+  end && nil
+end
+
 def result_display(part_num, note, vals)
   "Part #{part_num} (#{note}): #{vals.inject(:*)} (#{vals.join(", ")})"
 end
@@ -47,7 +54,9 @@ end
 puts result_display(1, "naive", naive_find(DATA, 2020, 2))
 puts result_display(1, "iterative", iterative_find_2(DATA, 2020))
 puts result_display(1, "recursive", recursive_find(DATA, 2020, 2))
+puts result_display(1, "golf", rec_find(DATA, 2020, 2))
 puts
 puts result_display(2, "naive", naive_find(DATA, 2020, 3))
 puts result_display(2, "iterative", iterative_find_3(DATA, 2020))
 puts result_display(2, "recursive", recursive_find(DATA, 2020, 3))
+puts result_display(2, "golf", rec_find(DATA, 2020, 3))

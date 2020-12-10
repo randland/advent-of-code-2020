@@ -2,28 +2,34 @@
 
 INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n")
+
+PART_1_SLOPES = [[3, 1]]
+PART_2_SLOPES = [[1, 1], [3, 1], [5, 1], [7, 1], [1, 2]]
 TREE = "#"
 
 def run(data, slopes)
-  x_count = data.first.length
-  y_count = data.count
+  width = data.first.length
+  height = data.count
 
   slopes.map do |x_delta, y_delta|
-    (y_count / y_delta).times.map do |iter|
-      data[iter * y_delta][iter * x_delta % x_count]
-    end.count(TREE)
+    (height / y_delta).times.count do |iter|
+      x_pos = iter * x_delta % width
+      y_pos = iter * y_delta
+      data[y_pos][x_pos] == TREE
+    end
   end.inject(:*)
 end
 
+puts "Part 1: #{run(DATA, PART_1_SLOPES)}"
+puts "Part 2: #{run(DATA, PART_2_SLOPES)}"
+
+#############
+# Code Golf #
+#############
+
 def golf(d, xy)
-  xy.map { |x, y| (0..(d.count-1)/y).count { |i| d[i*y][i*x%d[0].length] == TREE } }.inject(:*)
+  xy.map { |x, y| (0..(d.size-1)/y).count { |i| d[i*y][i*x%d[0].size] == TREE } }.inject(:*)
 end
 
-part_1_slopes = [[3, 1]]
-part_2_slopes = [[1, 1], [3, 1], [5, 1], [7, 1], [1, 2]]
-
-puts "Part 1: #{run(DATA, part_1_slopes)}"
-puts "Part 1 (golf): #{golf(DATA, part_1_slopes)}"
-puts
-puts "Part 2: #{run(DATA, part_2_slopes)}"
-puts "Part 2 (golf): #{golf(DATA, part_2_slopes)}"
+puts "Part 1 (golf): #{golf(DATA, PART_1_SLOPES)}"
+puts "Part 2 (golf): #{golf(DATA, PART_2_SLOPES)}"

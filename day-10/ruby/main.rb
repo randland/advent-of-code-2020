@@ -19,12 +19,6 @@ def part_1(data)
   counts[1] * counts[3]
 end
 
-def valid_permutation?(list)
-  contig_pairs = list.each_cons(2)
-
-  contig_pairs.all? { |a, b| (1..MAX_GAP).include?(b - a) }
-end
-
 def valid_permutations_count(list)
   return 1 if list.size == 1
 
@@ -36,16 +30,20 @@ def valid_permutations_count(list)
     kept_nums = perm_binary.chars.reverse.map { |c| c == "1" }
     mid_perm = mid_list.select.with_index { |_, idx| kept_nums[idx] }
     test_list = [list.first] + mid_perm + [list.last]
-
     contig_pairs = test_list.each_cons(2)
+
     contig_pairs.all? { |a, b| (1..MAX_GAP).include?(b - a) }
   end
 end
 
-def part_2(data)
-  list_partitioned_by_max_gap = full_list(data).slice_when { |a, b| b - a == MAX_GAP }
+def partition_by_gap_size(list, gap_size)
+  list.slice_when { |a, b| b - a == gap_size }
+end
 
-  list_partitioned_by_max_gap.map do |sublist|
+def part_2(data)
+  list = full_list(data)
+
+  partition_by_gap_size(list, MAX_GAP).map do |sublist|
     valid_permutations_count(sublist)
   end.inject(:*)
 end
@@ -58,18 +56,18 @@ puts "Part 2: #{part_2(DATA)}"
 #############
 
 def part_1_golf(l)
-  ([0]+l.sort+[l.max+3]).each_cons(2).map { |a, b| b - a }.yield_self { |c| c.count(1) * c.count(3) }
+  ([0] + l.sort + [l.max + 3]).each_cons(2).map { |a, b| b - a }.yield_self { |c| c.count(1) * c.count(3) }
 end
 
 def perm_count(l)
   return 1 if l.size < 2
-  (2**(l.size - 2)).times.map do |v|
-    [l[0]]+l[1..-2].select.with_index { |_, i| v.to_s(2)[-i-1] == "1" }+[l[-1]]
+  (0...2 ** (l.size - 2)).map do |v|
+    [l[0]] + l[1..-2].select.with_index { |_, i| v.to_s(2)[-1 - i] == "1" } + [l[-1]]
   end.count { |p| p.each_cons(2).all? { |a, b| b - a < 4 } }
 end
 
 def part_2_golf(l)
-  ([0]+l.sort+[l.max+3]).slice_when { |a, b| b - a == 3 }.map(&method(:perm_count)).inject(:*)
+  ([0] + l.sort + [l.max + 3]).slice_when { |a, b| b - a == 3 }.map(&method(:perm_count)).inject(:*)
 end
 
 puts "Part 1 (golf): #{part_1_golf(DATA)}"
