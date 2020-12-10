@@ -1,5 +1,3 @@
-## frozen_string_literal: true
-#
 # frozen_string_literal: true
 
 INPUT = File.read(ARGV[0])
@@ -22,13 +20,13 @@ def part_1(data)
 end
 
 def part_2(data)
-  { 0 => 1 }.yield_self do |perm_counts|
-    full_list(data)[1..-1].each do |plug|
-      perm_counts[plug] = (-3..-1).sum { |diff| perm_counts.fetch(plug + diff, 0) }
-    end
-
-    perm_counts.values.last
+  perm_counts = { 0 => 1 }
+  list = full_list(data)[1..-1]
+  list.each do |plug|
+    possible_prevs = (1..MAX_GAP).map { |diff| plug - diff }
+    perm_counts[plug] = perm_counts.slice(*possible_prevs).values.sum
   end
+  perm_counts.values.last
 end
 
 puts "Part 1: #{part_1(DATA)}"
