@@ -19,7 +19,7 @@ def valid_permutation?(list)
 end
 
 def valid_permutations_count(list)
-  return 1 if list.size < 3
+  return 1 if list.size == 1
 
   mid_list = list[1..-2]
   perm_count = 2 ** mid_list.size
@@ -56,9 +56,9 @@ end
 def valid_perms(list)
   return 1 if list.size < 3
 
-  (2**(list.size - 2)).times.map do |change_code|
-    changes = change_code.to_s(2).reverse.chars.map { |c| c == "1" }
-    [list[0]] + list[1..-2].select.with_index { |_, idx| changes[idx] } + [list[-1]]
+  (2**(list.size - 2)).times.map do |ver|
+    kept = ver.to_s(2).reverse.chars.map { |c| c == "1" }
+    [list[0]] + list[1..-2].select.with_index { |_, idx| kept[idx] } + [list[-1]]
   end.select { |list| list.each_cons(2).all? { |a, b| b - a <= 3 } }.count
 end
 
