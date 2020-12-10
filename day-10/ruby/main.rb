@@ -35,8 +35,10 @@ def valid_permutations_count(list)
     perm_binary = perm_idx.to_s(2)
     kept_nums = perm_binary.chars.reverse.map { |c| c == "1" }
     mid_perm = mid_list.select.with_index { |_, idx| kept_nums[idx] }
+    test_list = [list.first] + mid_perm + [list.last]
 
-    valid_permutation?([list.first] + mid_perm + [list.last])
+    contig_pairs = test_list.each_cons(2)
+    contig_pairs.all? { |a, b| (1..MAX_GAP).include?(b - a) }
   end
 end
 
@@ -55,24 +57,19 @@ puts "Part 2: #{part_2(DATA)}"
 # Code Golf #
 #############
 
-def golf_list(list)
-  [0] + list.sort + [list.max + 3]
+def part_1_golf(l)
+  ([0]+l.sort+[l.max+3]).each_cons(2).map { |a, b| b - a }.yield_self { |c| c.count(1) * c.count(3) }
 end
 
-def part_1_golf(data)
-  golf_list(data).each_cons(2).map { |a, b| b - a }.yield_self { |c| c.count(1) * c.count(3) }
+def perm_count(l)
+  return 1 if l.size < 3
+  (2**(l.size - 2)).times.
+    map { |v| [l[0]] + l[1..-2].select.with_index { |_, i| v.to_s(2)[-i-1] == "1" } + [l[-1]] }.
+    count { |p| p.each_cons(2).all? { |a, b| b - a < 4 } }
 end
 
-def perm_count(list)
-  return 1 if list.size < 3
-
-  (2**(list.size - 2)).times.map do |v|
-    [list[0]] + list[1..-2].select.with_index { |_, i| v.to_s(2)[-i-1] == "1" } + [list[-1]]
-  end.select { |list| list.each_cons(2).all? { |a, b| b - a < 4 } }.count
-end
-
-def part_2_golf(data)
-  golf_list(data).slice_when { |a, b| b - a == 3 }.map(&method(:perm_count)).inject(:*)
+def part_2_golf(l)
+  ([0]+l.sort+[l.max+3]).slice_when { |a, b| b - a == 3 }.map(&method(:perm_count)).inject(:*)
 end
 
 puts "Part 1 (golf): #{part_1_golf(DATA)}"
