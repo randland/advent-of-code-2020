@@ -1,3 +1,5 @@
+## frozen_string_literal: true
+#
 # frozen_string_literal: true
 
 INPUT = File.read(ARGV[0])
@@ -59,15 +61,8 @@ def part_1_golf(l)
   ([0] + l.sort + [l.max + 3]).each_cons(2).map { |a, b| b - a }.yield_self { |c| c.count(1) * c.count(3) }
 end
 
-def perm_count(l)
-  return 1 if l.size < 2
-  (0...2 ** (l.size - 2)).map do |v|
-    [l[0]] + l[1..-2].select.with_index { |_, i| v.to_s(2)[-1 - i] == "1" } + [l[-1]]
-  end.count { |p| p.each_cons(2).all? { |a, b| b - a < 4 } }
-end
-
 def part_2_golf(l)
-  ([0] + l.sort + [l.max + 3]).slice_when { |a, b| b - a == 3 }.map(&method(:perm_count)).inject(:*)
+  (l.sort + [l.max + 3]).inject({0 => 1}) { |o, e| o.merge(e => (1..3).sum { |d| o[e - d] || 0 }) }.values.last
 end
 
 puts "Part 1 (golf): #{part_1_golf(DATA)}"
