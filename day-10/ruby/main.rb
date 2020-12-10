@@ -21,33 +21,14 @@ def part_1(data)
   counts[1] * counts[3]
 end
 
-def valid_permutations_count(list)
-  return 1 if list.size == 1
-
-  mid_list = list[1..-2]
-  perm_count = 2 ** mid_list.size
-
-  perm_count.times.count do |perm_idx|
-    perm_binary = perm_idx.to_s(2)
-    kept_nums = perm_binary.chars.reverse.map { |c| c == "1" }
-    mid_perm = mid_list.select.with_index { |_, idx| kept_nums[idx] }
-    test_list = [list.first] + mid_perm + [list.last]
-    contig_pairs = test_list.each_cons(2)
-
-    contig_pairs.all? { |a, b| (1..MAX_GAP).include?(b - a) }
-  end
-end
-
-def partition_by_gap_size(list, gap_size)
-  list.slice_when { |a, b| b - a == gap_size }
-end
-
 def part_2(data)
-  list = full_list(data)
+  { 0 => 1 }.yield_self do |perm_counts|
+    full_list(data)[1..-1].each do |plug|
+      perm_counts[plug] = (-3..-1).sum { |diff| perm_counts.fetch(plug + diff, 0) }
+    end
 
-  partition_by_gap_size(list, MAX_GAP).map do |sublist|
-    valid_permutations_count(sublist)
-  end.inject(:*)
+    perm_counts.values.last
+  end
 end
 
 puts "Part 1: #{part_1(DATA)}"
