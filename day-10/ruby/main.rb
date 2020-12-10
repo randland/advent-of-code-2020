@@ -62,10 +62,10 @@ def part_1_golf(l)
 end
 
 def perm_count(l)
-  return 1 if l.size < 3
-  (2**(l.size - 2)).times.
-    map { |v| [l[0]] + l[1..-2].select.with_index { |_, i| v.to_s(2)[-i-1] == "1" } + [l[-1]] }.
-    count { |p| p.each_cons(2).all? { |a, b| b - a < 4 } }
+  return 1 if l.size < 2
+  (2**(l.size - 2)).times.map do |v|
+    [l[0]]+l[1..-2].select.with_index { |_, i| v.to_s(2)[-i-1] == "1" }+[l[-1]]
+  end.count { |p| p.each_cons(2).all? { |a, b| b - a < 4 } }
 end
 
 def part_2_golf(l)
