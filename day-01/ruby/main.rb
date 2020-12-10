@@ -3,9 +3,16 @@
 INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n").map(&:to_i)
 
+def result_display(part_num, note, vals)
+  "Part #{part_num} (#{note}): #{vals.inject(:*)}"
+end
+
 def naive_find(array, target, count)
   array.combination(count).find { |arr| arr.inject(:+) == target }
 end
+
+puts result_display(1, "naive", naive_find(DATA, 2020, 2))
+puts result_display(2, "naive", naive_find(DATA, 2020, 3))
 
 def iterative_find_2(array, target)
   array[0 .. -2].each_with_index do |a, idx|
@@ -14,6 +21,8 @@ def iterative_find_2(array, target)
     end
   end
 end
+
+puts result_display(1, "iterative", iterative_find_2(DATA, 2020))
 
 def iterative_find_3(array, target)
   array[0 .. -3].each.with_index do |a, idx_a|
@@ -24,6 +33,8 @@ def iterative_find_3(array, target)
     end
   end
 end
+
+puts result_display(2, "iterative", iterative_find_3(DATA, 2020))
 
 def recursive_find(array, target, remaining)
   if remaining == 1
@@ -40,24 +51,20 @@ def recursive_find(array, target, remaining)
   nil
 end
 
+puts result_display(1, "recursive", recursive_find(DATA, 2020, 2))
+puts result_display(2, "recursive", recursive_find(DATA, 2020, 3))
+
+#############
+# Code Golf #
+#############
+
 def part_1_golf(a, t)
   a & a.map { |n| t - n }
 end
 
 def part_2_golf(a, t)
-  a.map { |n| [n] + part_1_golf(a, 2020 - n) }.reject { |l| l.size == 1 }.first
+  a.map { |n| [n] + part_1_golf(a, t - n) }.select { |l| l.size > 1 }[0]
 end
 
-def result_display(part_num, note, vals)
-  "Part #{part_num} (#{note}): #{vals.inject(:*)} (#{vals.join(", ")})"
-end
-
-puts result_display(1, "naive", naive_find(DATA, 2020, 2))
-puts result_display(1, "iterative", iterative_find_2(DATA, 2020))
-puts result_display(1, "recursive", recursive_find(DATA, 2020, 2))
 puts result_display(1, "golf", part_1_golf(DATA, 2020))
-puts
-puts result_display(2, "naive", naive_find(DATA, 2020, 3))
-puts result_display(2, "iterative", iterative_find_3(DATA, 2020))
-puts result_display(2, "recursive", recursive_find(DATA, 2020, 3))
 puts result_display(2, "golf", part_2_golf(DATA, 2020))
