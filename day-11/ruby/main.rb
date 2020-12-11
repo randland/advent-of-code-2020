@@ -130,15 +130,15 @@ def step(s, o)
   s
 end
 
+def occ?(l, x, y, xd, yd, d=1)
+  x+xd*d >= 0 && y+yd*d >= 0 && (l[y+yd*d] || [])[x+xd*d] == O
+end
+
 def part_1_golf(l)
   n = l
   begin
     c = n
-    n = c.map.with_index do |r, y|
-          r.map.with_index do |s, x|
-            step(s, DIRS.count { |xd, yd| x+xd >= 0 && y+yd >= 0 && (c[y+yd] || [])[x+xd] == O })
-          end
-        end
+    n = c.map.with_index { |r, y| r.map.with_index { |s, x| step(s, DIRS.count { |dir| occ?(c, x, y, *dir) }) } }
   end while c != n
   c.flatten.count(O)
 end
@@ -155,7 +155,7 @@ def part_2_golf(l)
                 d += 1
                 break if [O, E, nil].include?((c[y+yd*d] || [])[x+xd*d])
               end 
-              x+xd*d >= 0 && y+yd*d >= 0 && (c[y+yd*d] || [])[x+xd*d] == O
+              occ?(c, x, y, xd, yd, d)
             end
             step(s, o)
           end
