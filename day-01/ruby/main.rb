@@ -4,7 +4,7 @@ INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n").map(&:to_i)
 
 def result_display(part_num, note, vals)
-  "Part #{part_num} (#{note}): #{vals.inject(:*)}"
+  "Part #{part_num} (#{note}): #{vals.inject(:*)}, [#{vals.join(", ")}]"
 end
 
 def naive_find(array, target, count)
@@ -53,27 +53,19 @@ end
 
 puts result_display(1, "recursive", recursive_find(DATA, 2020, 2))
 puts result_display(2, "recursive", recursive_find(DATA, 2020, 3))
+puts result_display(3, "recursive", recursive_find(DATA, 2020, 4))
 
 #############
 # Code Golf #
 #############
 
 def part_1_golf(a, t)
-  a & a.map { |n| t - n }
+  a & a.map { |n| t - n unless t - n == n }
 end
 
 def part_2_golf(a, t)
-  a.map { |n| [n] + part_1_golf(a, t - n) }.select { |l| l.size > 1 }[0]
+  a.map { |n| [n] + part_1_golf(a - [n], t - n) }.select { |l| l.size > 1 }[0]
 end
 
 puts result_display(1, "golf", part_1_golf(DATA, 2020))
 puts result_display(2, "golf", part_2_golf(DATA, 2020))
-
-def rec_golf(a, t, c)
-  return a & a.map { |n| t - n } if c < 3
-  a.map { |n| [n] + rec_golf(a, t - n, c - 1) }.select { |l| l.size > 1 }[0] || []
-end
-
-puts result_display(1, "recursive golf", rec_golf(DATA, 2020, 2))
-puts result_display(2, "recursive golf", rec_golf(DATA, 2020, 3))
-puts result_display(3, "recursive golf", rec_golf(DATA, 2020, 4))
