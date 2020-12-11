@@ -124,21 +124,23 @@ DIRS = [-1, 0, 1].repeated_permutation(2)
 O = "#"
 E = "L"
 
+def step(s, o)
+  return O if s == E && o < 1
+  return E if s == O && o > 4
+  s
+end
+
 def part_1_golf(l)
   n = l
   begin
     c = n
     n = c.map.with_index do |r, y|
           r.map.with_index do |s, x|
-            o = DIRS.count { |xd, yd| x+xd >= 0 && y+yd >= 0 && (c[y+yd] || [])[x+xd] == O }
-            if s == E && o < 1 then O
-            elsif s == O && o > 4 then E
-            else s
-            end
+            step(s, DIRS.count { |xd, yd| x+xd >= 0 && y+yd >= 0 && (c[y+yd] || [])[x+xd] == O })
           end
         end
   end while c != n
-  c.flatten.count("#")
+  c.flatten.count(O)
 end
 
 def part_2_golf(l)
@@ -149,20 +151,17 @@ def part_2_golf(l)
           r.map.with_index do |s, x|
             o = DIRS.count do |xd, yd|
               xd == 0 && yd == 0 ? next : d = 0
-              begin
+              until x+xd*d < 0 || y+yd*d < 0
                 d += 1
                 break if [O, E, nil].include?((c[y+yd*d] || [])[x+xd*d])
-              end until x+xd*d < 0 || y+yd*d < 0
+              end 
               x+xd*d >= 0 && y+yd*d >= 0 && (c[y+yd*d] || [])[x+xd*d] == O
             end
-            if s == E && o < 1 then O
-            elsif s == O && o > 4 then E
-            else s
-            end
+            step(s, o)
           end
         end
   end while c != n
-  c.flatten.count("#")
+  c.flatten.count(O)
 end
 
 puts "Part 1 (golf): #{part_1_golf(DATA)}"
