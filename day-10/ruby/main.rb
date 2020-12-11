@@ -42,9 +42,21 @@ def part_1_golf(l)
   ([0] + l.sort + [l.max + 3]).each_cons(2).map { |a, b| b - a }.yield_self { |c| c.count(1) * c.count(3) }
 end
 
+require 'set'
+
 def part_2_golf(l)
   (l.sort + [l.max + 3]).inject({ 0 => 1 }) { |o, e| o.merge(e => (e-3...e).sum { |i| o[i] || 0 }) }.values.last
 end
 
+def part_2_hash_golf(l)
+  s = Hash[l.zip([true].cycle)]
+  Hash.new { |h, k| h[k] = s[k] ? (1..3).sum { |n| h[k - n] || 0 } : 0 }.merge(0 => 1)[l.max]
+end
+
+def part_2_hash_golf(l)
+  Hash[l.zip([true].cycle)].yield_self { |s| Hash.new { |h, k| h[k] = s[k] ? (1..3).sum { |n| h[k - n] || 0 } : 0 }.merge(0 => 1)[l.max] }
+end
+
 puts "Part 1 (golf): #{part_1_golf(DATA)}"
 puts "Part 2 (golf): #{part_2_golf(DATA)}"
+puts "Part 2 (hash golf): #{part_2_hash_golf(DATA)}"
