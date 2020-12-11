@@ -60,7 +60,7 @@ puts result_display(3, "recursive", recursive_find(DATA, 2020, 4))
 #############
 
 def part_1_golf(a, t)
-  a & a.map { |n| t - n unless t - n == n }
+  a & a.map { |n| t - n if t - n != n }
 end
 
 def part_2_golf(a, t)
