@@ -15,17 +15,12 @@ class ShipNav
     @waypoint = waypoint
   end
 
-  def sail(commands)
-    commands.map(&method(:parse_command)).each { |op, count| rules[op].call(self, count) }
-    self
-  end
-
-  def move_ship(*deltas)
+  def move_ship(deltas)
     @ship = ship.zip(deltas).map(&:sum)
     self
   end
 
-  def move_waypoint(*deltas)
+  def move_waypoint(deltas)
     @waypoint = waypoint.zip(deltas).map(&:sum)
     self
   end
@@ -40,6 +35,27 @@ class ShipNav
     @dir_idx -= 1
     @waypoint = [waypoint[1], -waypoint[0]]
     self
+  end
+
+  def sail(commands)
+    commands.map(&method(:parse_command)).each { |op, count| rules[op].call(self, count) }
+    self
+  end
+
+  def east(n = 1)
+    [n, 0]
+  end
+
+  def north(n = 1)
+    [0, n]
+  end
+
+  def west(n = 1)
+    [-n, 0]
+  end
+
+  def south(n = 1)
+    [0, -n]
   end
 
   def dir
@@ -61,10 +77,10 @@ end
 
 def part_1(data)
   rules = {
-    "E" => ->(nav, n) { nav.move_ship(n, 0) },
-    "N" => ->(nav, n) { nav.move_ship(0, n) },
-    "W" => ->(nav, n) { nav.move_ship(-n, 0) },
-    "S" => ->(nav, n) { nav.move_ship(0, -n) },
+    "E" => ->(nav, n) { nav.move_ship(nav.east(n)) },
+    "N" => ->(nav, n) { nav.move_ship(nav.north(n)) },
+    "W" => ->(nav, n) { nav.move_ship(nav.west(n)) },
+    "S" => ->(nav, n) { nav.move_ship(nav.south(n)) },
     "L" => ->(nav, n) { (n / 90).times { nav.rotate_left } },
     "R" => ->(nav, n) { (n / 90).times { nav.rotate_right } },
     "F" => ->(nav, n) { rules[nav.dir].call(nav, n) }
@@ -75,13 +91,13 @@ end
 
 def part_2(data)
   rules = {
-    "E" => ->(nav, n) { nav.move_waypoint(n, 0) },
-    "N" => ->(nav, n) { nav.move_waypoint(0, n) },
-    "W" => ->(nav, n) { nav.move_waypoint(-n, 0) },
-    "S" => ->(nav, n) { nav.move_waypoint(0, -n) },
+    "E" => ->(nav, n) { nav.move_waypoint(nav.east(n)) },
+    "N" => ->(nav, n) { nav.move_waypoint(nav.north(n)) },
+    "W" => ->(nav, n) { nav.move_waypoint(nav.west(n)) },
+    "S" => ->(nav, n) { nav.move_waypoint(nav.south(n)) },
     "L" => ->(nav, n) { (n / 90).times { nav.rotate_left } },
     "R" => ->(nav, n) { (n / 90).times { nav.rotate_right } },
-    "F" => ->(nav, n) { n.times { nav.move_ship(*nav.waypoint) } }
+    "F" => ->(nav, n) { n.times { nav.move_ship(nav.waypoint) } }
   }
 
   ShipNav.new(rules, waypoint: [10, 1]).sail(data).dist
