@@ -49,14 +49,6 @@ class SeatLayout
     next_layout.step_until_stable
   end
 
-  def total_occupied_count
-    @data.flatten.count(OCCUPIED)
-  end
-
-  def print
-    puts @data.map(&:join)
-  end
-
   def occupied_count
     @data.flatten.count(OCCUPIED)
   end
@@ -72,9 +64,9 @@ class SeatLayout
   end
 
   def at(x, y)
-    return if x < 0 || y < 0
+    return if [x, y].any?(&:negative?)
 
-    (@data[y] || [])[x]
+    @data[y]&.at(x)
   end
 
   def set(x, y, val)
@@ -82,7 +74,8 @@ class SeatLayout
   end
 
   def offset(x, y, dir, dist)
-    [x + dist * dir[0], y + dist * dir[1]]
+    [x + dist * dir[0],
+     y + dist * dir[1] ]
   end
 
   def detect_neighbor_seats
@@ -91,13 +84,13 @@ class SeatLayout
         DIRS.map do |dir|
           spot, dist = 0, 0
 
-          until (SEAT_STATES.include?(spot) || spot.nil?)
+          until spot.nil? || SEAT_STATES.include?(spot)
             dist += 1
             spot = at(*offset(x, y, dir, dist))
             break if @adjacent_only
           end
-
           next if spot.nil?
+
           offset(x, y, dir, dist)
         end.compact
       end
@@ -120,7 +113,7 @@ puts "Part 2: #{part_2(DATA)}"
 ## Code Golf #
 ##############
 
-DIRS = [-1, 0, 1].repeated_permutation(2)
+D = [-1, 0, 1].repeated_permutation(2)
 O = "#"
 E = "L"
 
@@ -130,7 +123,7 @@ def step(s, o)
   s
 end
 
-def occ?(l, x, y, xd, yd, d=1)
+def o?(l, x, y, xd, yd, d=1)
   x+xd*d >= 0 && y+yd*d >= 0 && (l[y+yd*d] || [])[x+xd*d] == O
 end
 
@@ -138,7 +131,7 @@ def part_1_golf(l)
   n = l
   begin
     c = n
-    n = c.map.with_index { |r, y| r.map.with_index { |s, x| step(s, DIRS.count { |dir| occ?(c, x, y, *dir) }) } }
+    n = c.map.with_index { |r, y| r.map.with_index { |s, x| step(s, D.count { |d| o?(c, x, y, *d) }) } }
   end while c != n
   c.flatten.count(O)
 end
@@ -149,13 +142,13 @@ def part_2_golf(l)
     c = n
     n = c.map.with_index do |r, y|
           r.map.with_index do |s, x|
-            o = DIRS.count do |xd, yd|
+            o = D.count do |xd, yd|
               xd == 0 && yd == 0 ? next : d = 0
               until x+xd*d < 0 || y+yd*d < 0
                 d += 1
                 break if [O, E, nil].include?((c[y+yd*d] || [])[x+xd*d])
               end 
-              occ?(c, x, y, xd, yd, d)
+              o?(c, x, y, xd, yd, d)
             end
             step(s, o)
           end
