@@ -122,13 +122,11 @@ O = "#"
 E = "L"
 
 def step(s, o)
-  return O if s == E && o < 1
-  return E if s == O && o > 4
-  s
+  s == E && o < 1 ? O : s == O && o > 4 ? E : s
 end
 
 def o?(l, x, y, xd, yd, d=1)
-  x+xd*d >= 0 && y+yd*d >= 0 && (l[y+yd*d] || [])[x+xd*d] == O
+  x+xd*d >= 0 && y+yd*d >= 0 && l[y+yd*d]&.at(x+xd*d) == O
 end
 
 def part_1_golf(l)
@@ -150,7 +148,7 @@ def part_2_golf(l)
               xd == 0 && yd == 0 ? next : d = 0
               until x+xd*d < 0 || y+yd*d < 0
                 d += 1
-                break if [O, E, nil].include?((c[y+yd*d] || [])[x+xd*d])
+                break if [O, E, nil].include?(c[y+yd*d]&.at(x+xd*d))
               end 
               o?(c, x, y, xd, yd, d)
             end
