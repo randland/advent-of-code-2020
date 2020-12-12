@@ -4,103 +4,124 @@ INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n")
 
 class ShipNav
-  DIRS = %w[E N W S]
+  DIRS = [EAST = "E", NORTH = "N", WEST = "W", SOUTH = "S"]
 
   attr_reader :ship, :waypoint
 
-  def initialize(rules, ship: [0, 0], dir: "E", waypoint: [10, 1])
+  def initialize(rules, dir: NORTH, waypoint: [0, 1])
     @rules = rules
-    @ship = ship
+    @ship = [0, 0]
     @dir_idx = DIRS.index(dir)
     @waypoint = waypoint
   end
 
-  def move_ship(deltas)
-    @ship = ship.zip(deltas).map(&:sum)
-    self
-  end
-
-  def move_waypoint(deltas)
-    @waypoint = waypoint.zip(deltas).map(&:sum)
-    self
-  end
-
-  def rotate_left
-    @dir_idx += 1
-    @waypoint = [-waypoint[1], waypoint[0]]
-    self
-  end
-
-  def rotate_right
-    @dir_idx -= 1
-    @waypoint = [waypoint[1], -waypoint[0]]
-    self
-  end
-
   def sail(commands)
-    commands.map(&method(:parse_command)).each { |op, count| rules[op].call(self, count) }
+    commands.each do |command|
+      op, count = command[0], command[1..].to_i
+      rules[op].call(self, count)
+    end
+
     self
   end
 
-  def east(n = 1)
+  def move_ship(vector)
+    @ship = ship.zip(vector).map(&:sum)
+    self
+  end
+
+  def rotate_left(n = 1)
+    @dir_idx += n
+    self
+  end
+
+  def rotate_right(n = 1)
+    @dir_idx -= n
+    self
+  end
+
+  def move_waypoint(vector)
+    @waypoint = waypoint.zip(vector).map(&:sum)
+    self
+  end
+
+  def swing_waypoint_left(n = 1)
+    n.times { @waypoint = [-waypoint[1], waypoint[0]] }
+    self
+  end
+
+  def swing_waypoint_right(n = 1)
+    n.times { @waypoint = [waypoint[1], -waypoint[0]] }
+    self
+  end
+
+  def east_vector(n = 1)
     [n, 0]
   end
 
-  def north(n = 1)
+  def north_vector(n = 1)
     [0, n]
   end
 
-  def west(n = 1)
+  def west_vector(n = 1)
     [-n, 0]
   end
 
-  def south(n = 1)
+  def south_vector(n = 1)
     [0, -n]
   end
 
-  def dir
-    DIRS[dir_idx % 4]
+  def dir_vector(n = 1)
+    case DIRS[dir_idx % 4]
+    when EAST then east_vector(n)
+    when NORTH then north_vector(n)
+    when WEST then west_vector(n)
+    when SOUTH then south_vector(n)
+    end
   end
 
-  def dist
+  def waypoint_vector(n = 1)
+    [waypoint[0] * n, waypoint[1] * n]
+  end
+
+  def dist_from_origin
     ship.map(&:abs).sum
   end
 
   private
 
   attr_reader :dir_idx, :rules
-
-  def parse_command(command)
-    [command[0], command[1..].to_i]
-  end
 end
 
-def part_1(data)
+def part_1(command_list)
   rules = {
-    "E" => ->(nav, n) { nav.move_ship(nav.east(n)) },
-    "N" => ->(nav, n) { nav.move_ship(nav.north(n)) },
-    "W" => ->(nav, n) { nav.move_ship(nav.west(n)) },
-    "S" => ->(nav, n) { nav.move_ship(nav.south(n)) },
-    "L" => ->(nav, n) { (n / 90).times { nav.rotate_left } },
-    "R" => ->(nav, n) { (n / 90).times { nav.rotate_right } },
-    "F" => ->(nav, n) { rules[nav.dir].call(nav, n) }
+    "E" => ->(nav, n) { nav.move_ship(nav.east_vector(n)) },
+    "N" => ->(nav, n) { nav.move_ship(nav.north_vector(n)) },
+    "W" => ->(nav, n) { nav.move_ship(nav.west_vector(n)) },
+    "S" => ->(nav, n) { nav.move_ship(nav.south_vector(n)) },
+    "L" => ->(nav, n) { nav.rotate_left(n / 90) },
+    "R" => ->(nav, n) { nav.rotate_right(n / 90) },
+    "F" => ->(nav, n) { nav.move_ship(nav.dir_vector(n)) }
   }
 
-  ShipNav.new(rules, dir: "E").sail(data).dist
+  ShipNav.new(rules, dir: ShipNav::EAST).
+    sail(command_list).
+    dist_from_origin
 end
 
-def part_2(data)
+def part_2(command_list)
   rules = {
-    "E" => ->(nav, n) { nav.move_waypoint(nav.east(n)) },
-    "N" => ->(nav, n) { nav.move_waypoint(nav.north(n)) },
-    "W" => ->(nav, n) { nav.move_waypoint(nav.west(n)) },
-    "S" => ->(nav, n) { nav.move_waypoint(nav.south(n)) },
-    "L" => ->(nav, n) { (n / 90).times { nav.rotate_left } },
-    "R" => ->(nav, n) { (n / 90).times { nav.rotate_right } },
-    "F" => ->(nav, n) { n.times { nav.move_ship(nav.waypoint) } }
+    "E" => ->(nav, n) { nav.move_waypoint(nav.east_vector(n)) },
+    "N" => ->(nav, n) { nav.move_waypoint(nav.north_vector(n)) },
+    "W" => ->(nav, n) { nav.move_waypoint(nav.west_vector(n)) },
+    "S" => ->(nav, n) { nav.move_waypoint(nav.south_vector(n)) },
+    "L" => ->(nav, n) { nav.swing_waypoint_left(n / 90) },
+    "R" => ->(nav, n) { nav.swing_waypoint_right(n / 90) },
+    "F" => ->(nav, n) { nav.move_ship(nav.waypoint_vector(n)) }
   }
 
-  ShipNav.new(rules, waypoint: [10, 1]).sail(data).dist
+  ShipNav.new(rules, waypoint: [10, 1]).
+    sail(command_list).
+    dist_from_origin
 end
 
 puts "Part 1: #{part_1(DATA)}"
