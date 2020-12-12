@@ -5,12 +5,14 @@ require 'pry'
 INPUT = File.read(ARGV[0])
 DATA = INPUT.split("\n").map(&:chars)
 
-PART_1_RULES = { max_to_sit: 0, min_to_leave: 4 }
-PART_2_RULES = { max_to_sit: 0, min_to_leave: 5 }
+PART_1_RULES = { sit: 0, leave: 4 }
+PART_2_RULES = { sit: 0, leave: 5 }
 
 class SeatLayout
   SEAT_STATES = [EMPTY = "L", OCCUPIED = "#"]
-  DIRS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]
+  DIRS = [[-1, -1], [-1,  0], [-1,  1],
+          [ 0, -1],           [ 0,  1],
+          [ 1, -1], [ 1,  0], [ 1,  1]]
 
   attr_reader :data
 
@@ -23,25 +25,6 @@ class SeatLayout
     @next_data = data.map(&:dup)
   end
 
-  def step
-    @neighbors.each_with_index do |row, y|
-      row.each_with_index do |neighbors, x|
-        neighbor_count = neighbors.map { |x, y| at(x, y) }.count(OCCUPIED)
-
-        case at(x, y)
-        when EMPTY then set(x, y, OCCUPIED) if neighbor_count <= @rules[:max_to_sit]
-        when OCCUPIED then set(x, y, EMPTY) if neighbor_count >= @rules[:min_to_leave]
-        end
-      end
-    end
-
-    if @adjacent_only
-      self.class.new(@next_data, rules: @rules, neighbors: @neighbors)
-    else
-      self.class.new(@next_data, rules: @rules, adjacent_only: false)
-    end
-  end
-
   def step_until_stable
     next_layout = step
     return self if next_layout.data == data
@@ -49,28 +32,49 @@ class SeatLayout
     next_layout.step_until_stable
   end
 
+  def step
+    neighbors.each_with_index do |row, y|
+      row.each_with_index do |neighbors, x|
+        neighbor_count = neighbors.map { |x, y| at(x, y) }.count(OCCUPIED)
+
+        case at(x, y)
+        when EMPTY then set(x, y, OCCUPIED) if neighbor_count <= rules[:sit]
+        when OCCUPIED then set(x, y, EMPTY) if neighbor_count >= rules[:leave]
+        end
+      end
+    end
+
+    if adjacent_only
+      self.class.new(next_data, rules: rules, neighbors: neighbors)
+    else
+      self.class.new(next_data, rules: rules, adjacent_only: false)
+    end
+  end
+
   def occupied_count
-    @data.flatten.count(OCCUPIED)
+    data.flatten.count(OCCUPIED)
   end
 
   private
 
+  attr_reader :adjacent_only, :neighbors, :next_data, :rules
+
   def width
-    @data.first.size
+    data.first.size
   end
 
   def height
-    @data.size
+    data.size
   end
 
   def at(x, y)
     return if [x, y].any?(&:negative?)
 
-    @data[y]&.at(x)
+    data[y]&.at(x)
   end
 
   def set(x, y, val)
-    @next_data[y][x] = val
+    next_data[y][x] = val
   end
 
   def offset(x, y, dir, dist)
@@ -79,7 +83,7 @@ class SeatLayout
   end
 
   def detect_neighbor_seats
-    @data.map.with_index do |row, y|
+    data.map.with_index do |row, y|
       row.map.with_index do |_, x|
         DIRS.map do |dir|
           spot, dist = 0, 0
@@ -87,7 +91,7 @@ class SeatLayout
           until spot.nil? || SEAT_STATES.include?(spot)
             dist += 1
             spot = at(*offset(x, y, dir, dist))
-            break if @adjacent_only
+            break if adjacent_only
           end
           next if spot.nil?
 
