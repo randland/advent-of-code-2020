@@ -55,7 +55,7 @@ def part_2_golf(d, c)
   l = d.split(",").map(&:to_i)
   s = l.reverse[1..].index(l[-1])&.succ || 0
   h = l.each_index.inject({}) { |m, i| m.merge(l[i] => [i]) }
-  (h.size...c-1).each { |i| h[s]&.last.tap { |o| h[s], s = (o.nil? ? [[i], 0] : [h[s] << i, i - o]) } }
+  (h.size...c-1).each { |i| h[s]&.last.tap { |o| h[s], s = (o.nil? ? [[i], 0] : [[h[s][1], i], i - o]) } }
   s
 end
 
@@ -64,6 +64,18 @@ puts "Part 2 (golf): #{part_2_golf(INPUT_2, 2020)}"
 # puts "Part 2 (golf): #{part_2_golf(INPUT_2, 30_000_000)}"
 
 require "benchmark"
+
+Benchmark.realtime do
+  5000.times do
+    part_2_golf(INPUT_2, 2020)
+  end
+end # => 4.358302999986336
+
+Benchmark.realtime do
+  5000.times do
+    part_2_golf_trim(INPUT_2, 2020)
+  end
+end # => 4.539112999977078
 
 # >> Part 1: 436
 # >> Part 2: 436
