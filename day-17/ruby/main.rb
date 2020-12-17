@@ -11,6 +11,7 @@ class ConwayGame
     initial_plane.split("\n").each_with_index do |row, y|
       row.split("").each_with_index do |state, x|
         next unless state == ON
+
         tuple = [x, y] + [0] * (dims - 2)
         result[tuple] = true
       end
@@ -20,8 +21,9 @@ class ConwayGame
   end
 
   def step(n = 1)
-    result = self.class.new(next_on_tuples, dims)
-    n == 1 ? result : result.step(n - 1)
+    return self if n < 1
+
+    self.class.new(next_on_tuples, dims).step(n - 1)
   end
 
   def active_count
@@ -38,34 +40,32 @@ class ConwayGame
   end
 
   def next_on_tuples
-    {}.tap do |results|
-      neighbor_counts.each do |tuple, count|
-        if on_tuples[tuple]
-          results[tuple] = true if [2, 3].include?(count)
-        else
-          results[tuple] = true if count == 3
-        end
-      end
+    results = {}
+    neighbor_counts.each do |tuple, count|
+      results[tuple] = true if will_be_on?(tuple, count)
     end
+   
+    results
   end
 
   def neighbor_counts
-    Hash.new(0).tap do |results|
-      on_tuples.keys.each do |on_tuple|
-        neighbor_locations(on_tuple).each do |neighbor|
-          results[neighbor] += 1
-        end
-      end
+    results = Hash.new(0)
+    on_tuples.keys.each do |on_tuple|
+      neighbor_locations(on_tuple).each { |neighbor| results[neighbor] += 1 }
     end
+
+    results
   end
 
   def neighbor_locations(tuple)
     offsets = (-1..1).to_a.repeated_permutation(tuple.size).to_a
     offsets.delete([0] * tuple.size)
 
-    offsets.map do |tuple_deltas|
-      tuple.each_index.map { |i| tuple[i] + tuple_deltas[i] }
-    end
+    offsets.map { |tuple_deltas| tuple.zip(tuple_deltas).map(&:sum) }
+  end
+
+  def will_be_on?(tuple, count)
+    on_tuples[tuple] ? [2, 3].include?(count) : count == 3
   end
 end
 
