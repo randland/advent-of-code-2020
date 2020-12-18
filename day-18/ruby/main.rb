@@ -4,32 +4,19 @@ INPUT_1 = File.read(ARGV[0] || "day-18/input.ex1.txt")
 INPUT_2 = File.read(ARGV[1] || ARGV[0] || "day-18/input.ex1.txt")
 
 def collapse_parens(eq, &solver)
-  first = eq.index("(")
-  last = find_matching_paren(eq, first)
-  "#{eq[0...first]}#{solver.call(eq[first+1...last])}#{eq[last+1..]}"
-end
+  eq =~ /\A(.*)\(([^\)]*)\)(.*)\z/
+  left_eq, inner_eq, right_eq = $1, $2, $3
+  val = solver.call(inner_eq)
 
-def find_matching_paren(str, first_idx = 0)
-  depth = 1
-  idx = first_idx
-
-  while depth > 0
-    idx += 1
-    depth += 1 if str[idx] == "("
-    depth -= 1 if str[idx] == ")"
-  end
-
-  idx
+  "#{left_eq}#{val}#{right_eq}"
 end
 
 def collapse_leftmost(eq)
   eq =~ /\A(\d+)([+*])(\d+)([^\d].*)?\z/
   num_1, op, num_2, right_eq = $1.to_i, $2, $3.to_i, $4
-  case op
-  when "+" then "#{num_1 + num_2}#{right_eq}"
-  when "*" then "#{num_1 * num_2}#{right_eq}"
-  else eq
-  end
+  val = op == "+" ? num_1 + num_2 : num_1 * num_2
+
+  "#{val}#{right_eq}"
 end
 
 def solve_part_1(eq)
@@ -43,13 +30,17 @@ end
 def collapse_add(eq, &solver)
   eq =~ /\A([^+]*\*)?(\d+)\+(\d+)([^\d].*)?\z/
   left_eq, num_1, num_2, right_eq = $1, $2.to_i, $3.to_i, $4
-  "#{left_eq}#{num_1 + num_2}#{right_eq}"
+  val = num_1 + num_2
+
+  "#{left_eq}#{val}#{right_eq}"
 end
 
 def collapse_mult(eq, &solver)
   eq =~ /\A([^*]*\+)?(\d+)\*(\d+)([^\d].*)?\z/
   left_eq, num_1, num_2, right_eq = $1, $2.to_i, $3.to_i, $4
-  "#{left_eq}#{num_1 * num_2}#{right_eq}"
+  val = num_1 * num_2
+
+  "#{left_eq}#{val}#{right_eq}"
 end
 
 def solve_part_2(eq)
